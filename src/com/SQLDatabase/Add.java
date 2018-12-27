@@ -5,18 +5,157 @@
  */
 package com.SQLDatabase;
 
-/**
- *
- * @author Nick
- */
-public class Add extends javax.swing.JFrame {
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.Box;
+import javax.swing.JCheckBox;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 
-    /**
-     * Creates new form Add
-     */
+
+public class Add extends javax.swing.JFrame{
+
+    List<JCheckBox> checkList;
+    int lastSelected;
+    DatabaseConnection db_con;
+    DatabaseTable db_tables;
+    
+    JScrollPane entryPanel;
+    
     public Add() {
         initComponents();
+        AddCheckBoxes();
+        initEntryFields();
+        
+        
+        
     }
+    
+    public void AddCheckBoxes(){
+        
+        checkList = new ArrayList<>();
+        
+        db_con = new DatabaseConnection();
+        db_tables = new DatabaseTable(db_con);
+
+        String tableNames[] = new String[db_tables.getTableNum()];
+        
+        tableNames = db_tables.getTableNames();
+        
+        Box box = Box.createVerticalBox();
+        
+        for(int i = 0; i < db_tables.getTableNum(); i++){
+            System.out.println(tableNames[i]);
+            JCheckBox checkb = new JCheckBox(tableNames[i], false);
+            checkList.add(checkb);
+            checkb.setVisible(true);
+            box.add(checkList.get(i));
+            checkList.get(i).addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                     checkBoxEv(e);
+                }
+            });
+            
+            
+        }
+        
+        JScrollPane pane = new JScrollPane(box);
+        pane.setBounds(0, this.getHeight()/2, this.getWidth()/2, 125);
+        
+        pane.revalidate();
+        pane.repaint();
+        pane.updateUI();
+        
+        this.add(pane);
+    }
+    
+     private void checkBoxEv(java.awt.event.ActionEvent evt){
+         
+         lastSelected = checkList.indexOf(evt.getSource());
+         
+         for(int i=0; i < db_tables.getTableNum(); i++){
+             
+             if(i != lastSelected){
+                 checkList.get(i).setSelected(false);
+             }
+         }
+         
+         updateEntryFields();
+     }
+    
+    public void initEntryFields(){
+        
+        
+        
+    }
+    
+    public void updateEntryFields(){
+        
+        String tableName = checkList.get(lastSelected).getText();
+        
+        Box box = Box.createVerticalBox();
+        
+        try{
+            ResultSet rsset = db_con.getConnection().createStatement().executeQuery("SELECT * FROM [" + tableName + "]");
+            ResultSetMetaData tableCols = rsset.getMetaData();
+            
+            for(int i = 0; i < tableCols.getColumnCount(); i++){
+                String colName = tableCols.getColumnName(i);
+                JTextField coltext = new JTextField();
+                coltext.setVisible(true);
+                coltext.addFocusListener(new FocusListener() {
+                    @Override
+                    public void focusGained(FocusEvent e) {
+                        if(coltext.getText().isEmpty()){
+                            coltext.setText("");
+                        }
+                    }
+
+                    @Override
+                    public void focusLost(FocusEvent e) {
+                        if(coltext.getText().isEmpty()){
+                            coltext.setText(colName);
+                        }
+                    }
+                });
+                box.add(coltext);
+                
+                
+                
+                entryPanel = new JScrollPane(box);
+        
+                entryPanel.setBounds(0, 0,100 , 125);
+                
+                entryPanel.revalidate();
+                entryPanel.repaint();
+                entryPanel.updateUI();
+                
+                this.setContentPane(entryPanel);
+                this.invalidate();
+                this.revalidate();
+            }
+        }
+        catch(SQLException ex){
+            
+        }
+         
+        
+        
+    }
+    
+    
+    
+    
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -27,22 +166,77 @@ public class Add extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jTextField1 = new javax.swing.JTextField();
+        Add_Table = new javax.swing.JButton();
+        jLabel1 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Add");
+        setResizable(false);
+
+        jTextField1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jTextField1ActionPerformed(evt);
+            }
+        });
+
+        Add_Table.setText("Add");
+        Add_Table.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                Add_TableActionPerformed(evt);
+            }
+        });
+
+        jLabel1.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
+        jLabel1.setText("  Add New Table");
+
+        jLabel2.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
+        jLabel2.setText("    Add New Entry");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(Add_Table, javax.swing.GroupLayout.PREFERRED_SIZE, 88, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 275, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 27, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(128, 128, 128)
+                        .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 141, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(115, 115, 115)
+                        .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 157, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(21, 21, 21)
+                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(26, 26, 26)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(Add_Table)
+                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addComponent(jLabel2)
+                .addContainerGap(149, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void jTextField1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jTextField1ActionPerformed
+
+    private void Add_TableActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Add_TableActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_Add_TableActionPerformed
 
     /**
      * @param args the command line arguments
@@ -80,5 +274,9 @@ public class Add extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton Add_Table;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JTextField jTextField1;
     // End of variables declaration//GEN-END:variables
 }
